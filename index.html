@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<title>Cabal Web</title>
+<style>
+  html, body, .full {
+    margin: 0px;
+    padding: 0px;
+    height: 100%;
+    width: 100%;
+  }
+
+  #main-area {
+    display: grid;
+    grid-template-columns: 100px auto;
+    grid-template-rows: auto;
+    grid-template-areas:
+      "rooms messages"
+      "controls controls";
+  }
+
+  #rooms {
+    grid-area: rooms;
+  }
+  #messages {
+    grid-area: messages;
+  }
+  #controls {
+    grid-area: controls;
+  }
+
+  .column {
+    overflow-y: scroll;
+  }
+</style>
+
+<main id="main-area" class="full">
+  <section id="channels" class="column">
+  </section>
+
+  <section id="messages" class="column">
+  </section>
+  <form id="controls" class="row">
+    <input id="message" />
+    <button id="send">📩</button>
+  </form>
+</main>
+
+<script src="bundle.js"></script>

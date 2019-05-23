@@ -1,0 +1,29 @@
+{
+  "name": "cabal-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A bare-bones Cabal chat implementation for the web.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify ./ > bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RangerMauve/cabal-web.git"
+  },
+  "author": "rangermauve",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RangerMauve/cabal-web/issues"
+  },
+  "homepage": "https://github.com/RangerMauve/cabal-web#readme",
+  "dependencies": {
+    "cabal-core": "^5.0.1",
+    "discovery-swarm-web": "^1.0.7",
+    "random-access-web": "^2.0.1"
+  },
+  "devDependencies": {
+    "browserify": "^16.2.3"
+  }
+}
