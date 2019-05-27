@@ -19,6 +19,9 @@ const crypto = require('crypto')
 const RAW = require('random-access-web')
 const DiscoverySwarmWeb = require('discovery-swarm-web')
 
+// This discovery server supports the default handshaking from discovery-swarm which is needed for cabal
+const DISCOVERY_SERVER = 'wss://rawswarm.mauve.moe'
+
 const storage = RAW('cabal')
 const cabalStorage = (file) => storage(key + '/' + file)
 
@@ -37,6 +40,7 @@ cabal.getLocalKey((err, key) => {
 
   const swarm = new DiscoverySwarmWeb({
     stream,
+    discovery: DISCOVERY_SERVER,
     id: Buffer.from(key)
   })
 
@@ -46,6 +50,18 @@ cabal.getLocalKey((err, key) => {
 let currentChannel = null
 
 loadChannel('default')
+
+$('#controls').addEventListener('submit', (e) => {
+  e.preventDefault()
+  const messageInput = $('#message')
+
+  const message = messageInput.value
+  if(!message) return
+
+  messageInput.value = ''
+
+  writeMessage(message)
+})
 
 function renderChannels() {
   cabal.channels.get((err, channels) => {
@@ -62,8 +78,49 @@ function stream(info) {
   return cabal.replicate()
 }
 
-function addMessage(message) {
-  console.log(message)
+function writeMessage(text) {
+  if(text.startsWith('/nick')) {
+    const nick = text.slice('/nick '.length)
+    cabal.publishNick(nick)
+    return
+  }
+
+  cabal.publish({
+    type: 'chat/text',
+    content: {
+      text,
+      channel: currentChannel
+    }
+  })
+}
+
+function addMessage({key, seq, value}, prepend) {
+  const {content, type, timestamp} = value
+  const {channel, text} = content
+
+  // Don't show messages from other channels
+  if(channel !== currentChannel) return
+
+  cabal.getUser(key, (err, user) => {
+    let name = `Anon-${key.slice(0,8)}`
+    if(user) name = user.name
+    console.log(timestamp, name, text)
+    const contents = `
+      <span class="message-timestamp">${prettyTimestamp(timestamp)}</span>
+      <span class="message-author">${name}</span>:
+      <span class="message-text">${text}</span>
+    `
+
+    const item = document.createElement('div')
+    item.classList.add('message')
+
+    item.innerHTML = contents
+    if(prepend) {
+      $('#messages').insertBefore(item, $('#messages').firstChild)
+    } else {
+      $('#messages').appendChild(item)
+    }
+  })
 }
 
 function loadChannel(channel) {
@@ -75,11 +132,35 @@ function loadChannel(channel) {
 
   $('#messages').innerHTML = `<div>Loading channel ${channel}</div>`
 
+  // Read messages
   cabal.messages.read(channel, {
-    limit: 16
-  }).on('data', addMessage)
+    limit: 16,
+  })
+  // Render the latest 16
+  .on('data', (message) => {
+    addMessage(message, true)
+  })
+  // Start listening for new messages
+  .on('end', () => {
+    cabal.messages.events.on(channel, addMessage)
+  })
+}
 
-  cabal.messages.events.on(channel, addMessage)
+function prettyTimestamp(timestamp) {
+  const date = new Date(timestamp)
+  const year = date.getFullYear()
+  const month = zeropad(date.getMonth()+1)
+  const day = zeropad(date.getDate())
+  const hours = zeropad(date.getHours())
+  const minutes= zeropad(date.getMinutes())
+  return `${year}/${month}/${day} ${hours}:${minutes}`
+}
+
+function zeropad(number) {
+  if(number < 10) {
+    return `0${number}`
+  }
+  return number
 }
 
 function $(selector) {

@@ -10,8 +10,8 @@
 
   #main-area {
     display: grid;
-    grid-template-columns: 100px auto;
-    grid-template-rows: auto;
+    grid-template-columns: 200px auto;
+    grid-template-rows: auto 1.5em;
     grid-template-areas:
       "rooms messages"
       "controls controls";
@@ -30,6 +30,20 @@
   .column {
     overflow-y: scroll;
   }
+
+  .channel-item {
+    display: block;
+  }
+
+  #controls {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  #message {
+    flex: 1;
+  }
 </style>
 
 <main id="main-area" class="full">
@@ -39,7 +53,7 @@
   <section id="messages" class="column">
   </section>
   <form id="controls" class="row">
-    <input id="message" />
+    <input id="message" title="message box"/>
     <button id="send">📩</button>
   </form>
 </main>
